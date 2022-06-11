@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Home_Work_12</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="loadStr">Загружаем данные</string>
+    <string name="revertLoad">Откатываем данные</string>
+    <string name="rxjava">RxJava</string>
+    <string name="dagger">Dagger</string>
+    <string name="load">Load</string>
 </resources>
