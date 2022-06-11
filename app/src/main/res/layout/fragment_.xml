@@ -63,45 +63,6 @@
             app:layout_constraintTop_toBottomOf="@+id/rxJava"
             app:layout_constraintVertical_bias="0.037" />
 
-        <TextView
-            android:id="@+id/progressInfo"
-            android:layout_width="146dp"
-            android:layout_height="24dp"
-            android:gravity="center"
-            android:text="@string/loadStr"
-            android:textAlignment="center"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/load"
-            app:layout_constraintVertical_bias="0.039" />
-
-        <TextView
-            android:id="@+id/progress"
-            android:layout_width="wrap_content"
-            android:layout_height="24dp"
-            android:gravity="center"
-            android:paddingLeft="4dp"
-            android:paddingRight="4dp"
-            android:text="0%"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toEndOf="@+id/progressInfo"
-            app:layout_constraintTop_toBottomOf="@+id/load"
-            app:layout_constraintVertical_bias="0.039" />
-
-        <ImageView
-            android:id="@+id/rocket"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/rocket"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

@@ -3,6 +3,7 @@ package com.example.home_work_12
 import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -48,39 +49,7 @@ class Fragment : Fragment() {
 
         // Подписка на кнопку загрузки данных
         view.findViewById<Button>(R.id.load).setOnClickListener {
-            // Меняем статус загрузки
-            view.findViewById<TextView>(R.id.progressInfo)?.text = getString(R.string.loadStr)
-            // Инициазируем ракету
-            val img = view.findViewById<ImageView>(R.id.rocket)
-            img?.rotation = 0f
-            img?.visibility = View.VISIBLE
-            // Грузим данные
             loadData()
-        }
-    }
-
-    /**
-     * Переместить ракету
-     */
-    private fun imgTransition(reverse: Boolean = false) {
-        val img = view?.findViewById<ImageView>(R.id.rocket)
-        val layout = view?.findViewById<ConstraintLayout>(R.id.constrLayout)
-        val destination = if (reverse) { 0f } else { -(layout?.height?.toFloat())!! }
-        val animator = ObjectAnimator.ofFloat(img, "translationY", destination)
-        animator.duration = 4000
-        img?.post {
-            animator.start()
-        }
-    }
-
-    /**
-     * Повернуть ракету
-     */
-    private fun imgRotate() {
-        val img = view?.findViewById<ImageView>(R.id.rocket)
-        val animator = ObjectAnimator.ofFloat(img, "rotation", 0f, 180f)
-        img?.post {
-            animator.start()
         }
     }
 
@@ -95,19 +64,13 @@ class Fragment : Fragment() {
      */
     private fun loadData() {
         // Устанавливаем доступность загрузки данных
-        val loadBtn = view?.findViewById<Button>(R.id.load)
-        loadBtn?.isEnabled = false
+        view?.findViewById<Button>(R.id.load)?.isEnabled = false
         val observer = object: Observer<Int> {
             override fun onSubscribe(d: Disposable) {
-                view?.findViewById<ImageView>(R.id.rocket)?.post {
-                    imgTransition()
-                }
                 Log.d(getRxTag(), "Подписались")
             }
 
             override fun onNext(t: Int) {
-                Thread.sleep(300)
-                setProgress((t))
                 Log.d(getRxTag(), "next value = $t")
             }
 
@@ -117,29 +80,9 @@ class Fragment : Fragment() {
 
             override fun onComplete() {
                 Log.d(getRxTag(), "БУМ! Закончили")
-                loadBtn?.post {
-                    // Устанавливаем доступность загрузки данных
-                    loadBtn.isEnabled = true
-                    // Устанавливаем статус загрузки
-                    view?.findViewById<TextView>(R.id.progressInfo)?.text = getString(R.string.loadFinish)
-                    view?.findViewById<TextView>(R.id.progress)?.text = ""
-                    view?.findViewById<ImageView>(R.id.rocket)?.visibility = View.GONE
-                }
             }
         }
         observable.subscribe(observer)
-    }
-
-    /**
-     * Установить прогресс загрузки
-     */
-    @SuppressLint("SetTextI18n")
-    private fun setProgress(elemNum: Int) {
-        val progress = view?.findViewById<TextView>(R.id.progress)
-        val percent = (elemNum * 100) / lastElem
-        progress?.post {
-            progress.text = "${percent}%"
-        }
     }
 
     /**
@@ -152,20 +95,16 @@ class Fragment : Fragment() {
             .observeOn(Schedulers.computation())
             .map {
                 if (it == lastElem ) {
-                    // так сделано потому что из за подписки onErrorResumeNext он не идет в onError
-                    // логируем
                     Log.d(getRxTag(), "next value = $it")
-                    Log.d(getRxTag(), "Ой, Ошибка начинай обратный отсчет")
-                    // Меняем направление ракеты и задаем движение
-                    imgRotate()
-                    imgTransition(true)
-                    // Устанавливаем статус загрузки
-                    view?.findViewById<TextView>(R.id.progressInfo)?.text = getString(R.string.revertLoad)
-                    setProgress(it)
                     // Бросаем ошибку
                     throw Throwable("Ой, Ошибка начинай обратный отсчет")
                 }
                 it
+            }
+            .doOnError {
+                Log.d(getRxTag(), "Ой, Ошибка начинай обратный отсчет")
+                // Устанавливаем доступность загрузки данных
+                view?.findViewById<Button>(R.id.load)?.isEnabled = true
             }
             .onErrorResumeNext(
                 Observable
