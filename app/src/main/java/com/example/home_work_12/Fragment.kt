@@ -21,6 +21,7 @@ class Fragment : Fragment() {
     private val loadDataSize = 14
     private val lastElem = loadDataSize - 1
     private var listData: Array<Int>? = null
+    private var isError: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,7 +36,7 @@ class Fragment : Fragment() {
         // инициализируем даггер компонент
         val diComponent = Application().getDIComponent()
         diComponent?.inject(this)
-        val daggerInfo = view?.findViewById<TextView>(R.id.daggerInfo)
+        val daggerInfo = view.findViewById<TextView>(R.id.daggerInfo)
         daggerInfo?.text = presenter.message
 
         // загружаем данные
@@ -60,13 +61,22 @@ class Fragment : Fragment() {
     private fun loadData() {
         // Устанавливаем доступность загрузки данных
         view?.findViewById<Button>(R.id.load)?.isEnabled = false
+        var disposable: Disposable? = null
         val observer = object: Observer<Int> {
             override fun onSubscribe(d: Disposable) {
+                disposable = d
                 Log.d(getRxTag(), "Подписались")
             }
 
             override fun onNext(t: Int) {
-                Log.d(getRxTag(), "next value = $t")
+                if (isError && t == 0) {
+                    Log.d(getRxTag(), "next value = $t")
+                    Log.d(getRxTag(), "БУМ! Закончили")
+                    disposable?.dispose()
+                    isError = false
+                } else {
+                    Log.d(getRxTag(), "next value = $t")
+                }
             }
 
             override fun onError(e: Throwable) {
@@ -74,7 +84,7 @@ class Fragment : Fragment() {
             }
 
             override fun onComplete() {
-                Log.d(getRxTag(), "БУМ! Закончили")
+                return
             }
         }
         observable.subscribe(observer)
@@ -87,7 +97,6 @@ class Fragment : Fragment() {
         return Observable
             .fromArray(*getData(dataSize = loadDataSize))
             .subscribeOn(Schedulers.computation())
-            .observeOn(Schedulers.computation())
             .map {
                 if (it == lastElem ) {
                     Log.d(getRxTag(), "next value = $it")
@@ -97,7 +106,8 @@ class Fragment : Fragment() {
                 it
             }
             .doOnError {
-                Log.d(getRxTag(), "Ой, Ошибка начинай обратный отсчет")
+                isError = true
+                Log.d(getRxTag(), it.localizedMessage)
                 // Устанавливаем доступность загрузки данных
                 view?.findViewById<Button>(R.id.load)?.isEnabled = true
             }
@@ -107,7 +117,7 @@ class Fragment : Fragment() {
                     .subscribeOn(Schedulers.computation())
                     .observeOn(AndroidSchedulers.mainThread())
             )
-            .doFinally {
+            .doOnDispose {
                 // отписка происходит по окончанию получения данных
                 Log.d(getRxTag(), "Потока больше нет, отписались")
             }
